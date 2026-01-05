@@ -1,39 +1,48 @@
 import os
 import sys
-
-# Esse comando força o Python a olhar para a pasta atual
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import streamlit as st
 from src.pdf_handler import PDFProcessor
 from src.analyzer import GDPRScanner
 
-# Configuração da Página
-st.set_page_config(page_title="EU GDPR AI Analyzer", page_icon="🇪🇺")
+# Page Config
+st.set_page_config(page_title="AI GDPR Analyzer", page_icon="🇪🇺")
 
-st.title("🇪🇺 GDPR Compliance AI Agent")
-st.markdown("Arraste sua Política de Privacidade para uma análise instantânea via Llama 3.")
+st.title("AI-Powered GDPR Agent")
+st.markdown("Upload your Privacy Policy for an instant compliance audit powered by Llama 3.")
 
-# Inicializa as classes
+# Initialize classes
 processor = PDFProcessor()
 scanner = GDPRScanner()
 
-# Componente de Upload
-uploaded_file = st.file_uploader("Escolha um arquivo PDF", type="pdf")
+uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
 
 if uploaded_file is not None:
-    # Salva temporariamente o arquivo na pasta data/
+    if not os.path.exists("data"):
+        os.makedirs("data")
+
     temp_path = os.path.join("data", "temp_upload.pdf")
     with open(temp_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
 
-    with st.spinner("Lendo PDF e consultando IA local..."):
-        # Pipeline que você já criou
+    with st.spinner("Processing PDF and consulting Local AI..."):
         text = processor.extract_text(temp_path)
-        report = scanner.analyze_text(text[:4000]) # Limitamos para ser mais rápido
+        report = scanner.analyze_text(text[:4000])
 
-        st.subheader("Relatório de Conformidade")
+        st.subheader("Compliance Analysis Report")
         st.info(report)
 
-    # Limpa o arquivo temporário
-    os.remove(temp_path)
+        report_filename = "gdpr_analysis_report.pdf"
+        processor.create_report_pdf(report, report_filename)
+
+        with open(report_filename, "rb") as pdf_file:
+            st.download_button(
+                label="📥 Download PDF Report",
+                data=pdf_file,
+                file_name="GDPR_Compliance_Report.pdf",
+                mime="application/pdf"
+            )
+
+    if os.path.exists(temp_path):
+        os.remove(temp_path)

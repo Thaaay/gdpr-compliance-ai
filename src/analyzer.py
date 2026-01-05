@@ -1,26 +1,28 @@
 import logging
 from langchain_ollama import OllamaLLM
 
-# Configuração de Log
+# Log Configuration
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger("GDPR-Scanner")
 
 class GDPRScanner:
     def __init__(self):
-        logger.info("Iniciando o modelo Llama 3 local...")
-        # Certifique-se de que o Ollama está rodando com 'llama3'
+        logger.info("Initializing Local Llama 3 model...")
         self.llm = OllamaLLM(model="llama3")
 
     def analyze_text(self, text):
-        logger.info("Enviando texto para análise da IA...")
+        logger.info("Sending text for AI analysis...")
         prompt = f"""
-        Analyze the following text for GDPR compliance. 
-        Identify data types, retention periods, and potential risks:
-        
+        [Role: Senior Data Protection Officer]
+        Analyze the following text for GDPR compliance.
+        Identify data types, retention periods, and potential risks.
+        Provide a professional audit report.
+
+        Text:
         {text}
         """
         try:
             return self.llm.invoke(prompt)
         except Exception as e:
-            logger.error(f"Erro na comunicação com o Ollama: {e}")
-            return "Erro ao processar a análise. Verifique se o Ollama está ativo."
+            logger.error(f"Error communicating with Ollama: {e}")
+            return "Error processing the analysis. Please ensure Ollama is running locally."
