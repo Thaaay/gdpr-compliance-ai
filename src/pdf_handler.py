@@ -32,3 +32,26 @@ class PDFProcessor:
         except Exception as e:
             logger.error(f"PDF Creation Error: {e}")
             raise
+
+class GDPRScanner:
+    def __init__(self):
+        self.llm = OllamaLLM(model="llama3")
+
+    def analyze_with_rag(self, vector_db):
+        """Busca o contexto no FAISS e analisa."""
+        # Buscamos os trechos que falam de dados, retenção e riscos
+        query = "What are the data types, retention periods, and security risks in this policy?"
+        docs = vector_db.similarity_search(query, k=4) # Pega os 4 trechos mais relevantes
+
+        context = "\n".join([d.page_content for d in docs])
+
+        prompt = f"""
+        [Role: Senior DPO]
+        Using ONLY the context below, analyze the GDPR compliance:
+
+        Context:
+        {context}
+
+        Report:
+        """
+        return self.llm.invoke(prompt)

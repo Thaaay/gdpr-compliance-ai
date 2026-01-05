@@ -1,5 +1,6 @@
 import os
 import sys
+from src.vector_store import VectorManager
 sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 import streamlit as st
@@ -28,7 +29,12 @@ if uploaded_file is not None:
 
     with st.spinner("Processing PDF and consulting Local AI..."):
         text = processor.extract_text(temp_path)
-        report = scanner.analyze_text(text[:4000])
+        
+       
+        vector_mgr = VectorManager()
+        db = vector_mgr.create_index(text)
+        
+        report = scanner.analyze_with_rag(db)
 
         st.subheader("Compliance Analysis Report")
         st.info(report)
